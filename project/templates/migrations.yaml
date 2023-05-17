@@ -1,0 +1,43 @@
+{{if .Values.migrations}}
+  {{ $GlovalValues := .Values }}
+  {{ $globalName := .Release.Name }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $globalName }}-migrations-{{$GlovalValues.migrations.tag}}-{{.Release.Revision}}
+  labels:
+    app: {{ $globalName }}-migrations
+spec:
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      {{ if or ($GlovalValues.gloval.imagePullSecrets) (.Values.migrations.imagePullSecrets)   }}
+      imagePullSecrets:
+        - name: {{ .Values.frontend.imagePullSecrets | default $GlovalValues.gloval.imagePullSecrets | default "" }}
+      {{ end }}
+      volumes:
+        - name: logs
+          persistentVolumeClaim:
+            claimName: {{ $globalName }}-pvc
+      containers:
+        - env:
+             {{ range $envName,$envValue := .Values.gloval.env }}
+            - name: {{$envName}}
+              value: "{{$envValue}}"
+            {{ end }}
+            - name: {{.Values.migrations.connectionStringName}}
+              valueFrom:
+                secretKeyRef:
+                  key: {{.Values.migrations.connectionStringName}}
+                  name: {{$GlovalValues.gloval.secrets}}
+
+          name: {{ $globalName }}-migrations-{{$GlovalValues.migrations.tag}}-{{.Release.Revision}}
+          image: {{ printf "%v:%v" ( (.Values.migrations.image) | default (printf "%v/%v" $GlovalValues.imageContainerRegistryHost $globalName  ) ) (.Values.migrations.tag | default .Values.gloval.tag)  }}
+          volumeMounts:
+            - name: logs
+              mountPath: /tmp_logs
+      restartPolicy: Never
+  backoffLimit: 1
+    {{end}}
+

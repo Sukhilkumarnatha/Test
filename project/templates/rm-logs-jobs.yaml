@@ -1,0 +1,69 @@
+  {{ $globalName := .Release.Name }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $globalName }}-rm-logs-jobs
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+            - name: logs
+              persistentVolumeClaim:
+                claimName: {{ $globalName }}-pvc
+            - name: old-logs
+              persistentVolumeClaim:
+                claimName: {{ $globalName }}-pvc-rm-logs
+          containers:
+            - name: rm-jobs
+              image: provistacorp/rm-logs:v6
+              env:
+                - name: MaxAgeOnDays
+                  value: "15"
+              volumeMounts:
+                - name: logs
+                  mountPath: /tmp_logs
+                - name: old-logs
+                  mountPath: /old_logs
+          restartPolicy: Never
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: blob.csi.azure.com
+  name: {{ $globalName }}-pv-{{.Release.Namespace}}-rm-logs
+spec:
+  capacity:
+    storage: 300Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain  # If set as "Delete" container would be removed after pvc deletion
+  storageClassName: azureblob-fuse-premium
+  mountOptions:
+    - -o allow_other
+    - --file-cache-timeout-in-seconds=120
+  csi:
+    driver: blob.csi.azure.com
+    readOnly: false
+    volumeHandle: {{ $globalName }}-pv-{{.Release.Namespace}}-rm-logs-id
+    volumeAttributes:
+      containerName: {{.Values.logs.azuredisk.sharename}}
+    nodeStageSecretRef:
+      name: {{ $globalName }}-logs-secret
+      namespace: {{.Release.Namespace}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $globalName }}-pvc-rm-logs
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 300Gi
+  volumeName: {{ $globalName }}-pv-{{.Release.Namespace}}-rm-logs
+  storageClassName: azureblob-fuse-premium

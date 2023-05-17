@@ -1,0 +1,22 @@
+{{ $globalName := .Release.Name }}
+  {{ $GlovalValues := .Values }}
+  {{ range $name,$value := .Values.backend }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:
+    {{ $globalName }}-{{ $name }}
+spec:
+  selector:
+    app:
+      {{ $globalName }}-{{ $name }}
+  ports:
+    - port: 80
+      {{if $value.port }}
+      targetPort: {{$value.port}}
+      {{else}}
+      targetPort: 80
+  {{end}}
+  type: ClusterIP
+  {{end}}

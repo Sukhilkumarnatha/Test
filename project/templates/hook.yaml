@@ -1,0 +1,143 @@
+{{ $GlovalValues := .Values }}
+{{ $globalName := .Release.Name }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{$globalName}}-hook
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook": "pre-install,pre-delete,post-delete,post-install"
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{$globalName}}-hook
+  annotations:
+    "helm.sh/hook-delete-policy": before-hook-creation
+    "helm.sh/hook": "pre-install,pre-delete,post-delete"
+subjects:
+  - kind: ServiceAccount
+    name: {{$globalName}}-hook
+    namespace: {{.Release.Namespace}}
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}pre-validation"
+  annotations:
+    "helm.sh/hook": "pre-install"
+
+    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
+spec:
+  activeDeadlineSeconds: 40
+  backoffLimit: 1
+  template:
+    metadata:
+      name: "{{ .Release.Name }}pre-validation"
+    spec:
+      {{ if $GlovalValues.gloval.imagePullSecrets  }}
+      imagePullSecrets:
+        - name: {{ $GlovalValues.gloval.imagePullSecrets  }}
+      {{ end }}
+      serviceAccountName: {{$globalName}}-hook
+      restartPolicy: Never
+      containers:
+        - name: pre-install-job
+          image:  viberegistry.azurecr.io/kubectl:latest
+
+          command:
+            - sh
+            - -c
+            - |
+              RELEASE_NAME={{.Values.elastic.releaseName}}
+              RELEASE_NAMESPACE={{.Values.elastic.namespace}}
+
+              if helm status $RELEASE_NAME -n $RELEASE_NAMESPACE | grep -q "STATUS: deployed"; then
+                echo "The release $RELEASE_NAME ran successfully."
+
+              else
+                echo "ERROR: The release $RELEASE_NAME ran with error."
+                helm status $RELEASE_NAME
+                exit 1
+              fi
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}pre"
+  annotations:
+    "helm.sh/hook": "pre-install"
+    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
+spec:
+  activeDeadlineSeconds: 60
+  backoffLimit: 1
+  template:
+    metadata:
+      name: "{{ .Release.Name }}pre"
+    spec:
+      serviceAccountName: {{$globalName}}-hook
+      restartPolicy: Never
+      containers:
+        - name: pre-install-job
+          image: bitnami/kubectl
+          command:
+            - sh
+            - -c
+            - |
+              kubectl get pods -A
+              kubectl get secret {{.Values.elastic.releaseName}}-elasticsearch-es-elastic-user \
+                  -n {{.Values.elastic.namespace}}  \
+                  -ojson \
+                  | jq 'del(.metadata.namespace,.metadata.resourceVersion,.metadata.uid) | .metadata.creationTimestamp=null' \
+                  | kubectl apply --namespace={{.Release.Namespace}} -f -
+
+              kubectl get secret {{.Values.elastic.releaseName}}-elasticsearch-es-http-certs-public \
+                  -n {{.Values.elastic.namespace}}  \
+                  -ojson \
+                  | jq 'del(.metadata.namespace,.metadata.resourceVersion,.metadata.uid) | .metadata.creationTimestamp=null' \
+                  | kubectl apply --namespace={{.Release.Namespace}} -f -
+
+
+              kubectl get secret {{.Values.elastic.releaseName}}-apm-server-apm-token \
+                  -n {{.Values.elastic.namespace}}  \
+                  -ojson \
+                  | jq 'del(.metadata.namespace,.metadata.resourceVersion,.metadata.uid) | .metadata.creationTimestamp=null' \
+                  | kubectl apply --namespace={{.Release.Namespace}} -f -
+
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}predelete"
+  annotations:
+    "helm.sh/hook": "pre-delete"
+    "helm.sh/hook-delete-policy": "hook-succeeded,hook-failed"
+spec:
+  activeDeadlineSeconds: 60
+  backoffLimit: 1
+  template:
+
+    metadata:
+      name: "{{ .Release.Name }}predelete"
+    spec:
+
+      serviceAccountName: {{$globalName}}-hook
+      restartPolicy: Never
+      containers:
+        - name: pre-install-job
+          image: bitnami/kubectl
+          command:
+            - sh
+            - -c
+            - |
+              kubectl get pods -A
+              kubectl delete secret {{.Values.elastic.releaseName}}-elasticsearch-es-elastic-user -n {{.Release.Namespace}}
+              kubectl delete secret {{.Values.elastic.releaseName}}-apm-server-apm-token -n {{.Release.Namespace}}
+              kubectl delete secret {{.Values.elastic.releaseName}}-elasticsearch-es-http-certs-public -n {{.Release.Namespace}}

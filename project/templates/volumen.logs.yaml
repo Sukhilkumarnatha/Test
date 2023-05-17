@@ -1,0 +1,57 @@
+{{ $GlovalValues := .Values }}
+  {{ $globalName := .Release.Name }}
+
+---
+apiVersion: v1
+data:
+  azurestorageaccountkey: {{.Values.logs.azuredisk.azurestorageaccountkey}}
+  azurestorageaccountname: {{.Values.logs.azuredisk.azurestorageaccountname}}
+kind: Secret
+metadata:
+  name: {{ $globalName }}-logs-secret
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: file.csi.azure.com
+  name: {{ $globalName }}-pv-{{.Release.Namespace}}
+spec:
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: azurefile-csi
+  csi:
+    driver: file.csi.azure.com
+    readOnly: false
+    volumeHandle: {{ $globalName }}-{{.Release.Namespace}}-pv  # make sure this volumeid is unique for every identical share in the clustera
+
+    volumeAttributes:
+      shareName: {{.Values.logs.azuredisk.sharename}}
+    nodeStageSecretRef:
+      name: {{ $globalName }}-logs-secret
+      namespace: {{.Release.Namespace}}
+  mountOptions:
+    - dir_mode=0777
+    - file_mode=0777
+    - uid=0
+    - gid=0
+    - mfsymlinks
+    - cache=strict
+    - nosharesock
+    - nobrl
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $globalName }}-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: azurefile-csi
+  volumeName: {{ $globalName }}-pv-{{.Release.Namespace}}
+  resources:
+    requests:
+      storage: 99Gi

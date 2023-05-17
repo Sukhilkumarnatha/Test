@@ -1,0 +1,41 @@
+{{ $GlovalValues := .Values }}
+  {{ $globalName := .Release.Name }}
+  {{if .Values.frontend}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $globalName }}
+spec:
+  selector:
+    app: {{ $globalName }}
+  ports:
+    - port: 80
+      {{ if .Values.frontend.port }}
+      targetPort: {{.Values.frontend.port}}
+      {{else}}
+      targetPort: 80
+  {{end}}
+  type: ClusterIP
+  {{end}}
+
+---
+  {{ if .Values.frontend }}
+    {{ range $envName,$envValue := .Values.frontend.other}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-{{ $globalName }}-{{$envName}}
+spec:
+  selector:
+    app: frontend-{{ $globalName }}-{{$envName}}
+  ports:
+    - port: 80
+      {{ if $envValue.port }}
+      targetPort: {{$envValue.port}}
+      {{else}}
+      targetPort: 80
+  {{end}}
+  type: ClusterIP
+---
+{{end}}
+{{end}}

@@ -1,0 +1,117 @@
+  {{ $GlovalValues := .Values }}
+  {{ $globalName := .Release.Name }}
+{{if .Values.frontend}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $globalName }}
+  labels:
+    app: {{ $globalName }}
+spec:
+  replicas: {{ .Values.frontend.replicas | default $GlovalValues.gloval.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $globalName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $globalName }}
+    spec:
+      {{ if or ($GlovalValues.gloval.imagePullSecrets) (.Values.frontend.imagePullSecrets)   }}
+      imagePullSecrets:
+        - name: {{ .Values.frontend.imagePullSecrets | default $GlovalValues.gloval.imagePullSecrets | default "" }}
+      {{ end }}
+      nodeSelector:
+        kubernetes.io/os: {{ $GlovalValues.frontend.so | default $GlovalValues.gloval.so   }}
+      containers:
+        - name: {{ $globalName }}
+          image: {{ printf "%v:%v" ( (.Values.frontend.image) | default (printf "%v/%v" $GlovalValues.imageContainerRegistryHost $globalName  ) ) (.Values.frontend.tag | default .Values.gloval.tag)  }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{.Values.frontend.port | default "80"}}
+          livenessProbe:
+            path: {{ .Values.frontend.liveness.path | default $GlovalValues.gloval.liveness.path}}
+            initialDelaySeconds: {{ .Values.frontend.liveness.initialDelaySeconds | default $GlovalValues.gloval.liveness.initialDelaySeconds  }}
+            failureThreshold: {{ .Values.frontend.liveness.failureThreshold | default $GlovalValues.gloval.liveness.failureThreshold }}
+            periodSeconds: {{ .Values.frontend.liveness.periodSeconds | default $GlovalValues.gloval.liveness.periodSeconds }}
+            successThreshold: {{ .Values.frontend.liveness.successThreshold | default $GlovalValues.gloval.liveness.successThreshold }}
+            timeoutSeconds: {{ .Values.frontend.liveness.timeoutSeconds | default $GlovalValues.gloval.liveness.timeoutSeconds }}
+         
+          readinessProbe:
+            path: {{ .Values.frontend.readiness.path | default $GlovalValues.gloval.readiness.path}}
+            initialDelaySeconds: {{ .Values.frontend.readiness.initialDelaySeconds | default $GlovalValues.gloval.readiness.initialDelaySeconds  }}
+            failureThreshold: {{ .Values.frontend.readiness.failureThreshold | default $GlovalValues.gloval.readiness.failureThreshold }}
+            periodSeconds: {{ .Values.frontend.readiness.periodSeconds | default $GlovalValues.gloval.readiness.periodSeconds }}
+            successThreshold: {{ .Values.frontend.readiness.successThreshold | default $GlovalValues.gloval.readiness.successThreshold }}
+            timeoutSeconds: {{ .Values.frontend.readiness.timeoutSeconds | default $GlovalValues.gloval.readiness.timeoutSeconds }} 
+
+          startupProbe:
+            path: {{ .Values.frontend.startup.path | default $GlovalValues.gloval.startup.path}}
+            initialDelaySeconds: {{ .Values.frontend.startup.initialDelaySeconds | default $GlovalValues.gloval.startup.initialDelaySeconds  }}
+            failureThreshold: {{ .Values.frontend.startup.failureThreshold | default $GlovalValues.gloval.startup.failureThreshold }}
+            periodSeconds: {{ .Values.frontend.startup.periodSeconds | default $GlovalValues.gloval.startup.periodSeconds }}
+            successThreshold: {{ .Values.frontend.startup.successThreshold | default $GlovalValues.gloval.startup.successThreshold }}
+            timeoutSeconds: {{ .Values.frontend.startup.timeoutSeconds | default $GlovalValues.gloval.startup.timeoutSeconds }}
+          
+          
+                 
+  {{end}}
+---
+
+    {{if .Values.frontend}}
+    {{ range $envName,$envValue := .Values.frontend.other}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-{{ $globalName }}-{{$envName}}
+  labels:
+    app: frontend-{{ $globalName }}-{{$envName}}
+spec:
+  replicas: {{ $envValue.replicas | default $GlovalValues.gloval.replicas }}
+  selector:
+    matchLabels:
+      app: frontend-{{ $globalName }}-{{$envName}}
+  template:
+    metadata:
+      labels:
+        app: frontend-{{ $globalName }}-{{$envName}}
+    spec:
+      {{ if or ($GlovalValues.gloval.imagePullSecrets) ($envValue.imagePullSecrets)   }}
+      imagePullSecrets:
+        - name: {{ $envValue.imagePullSecrets | default $GlovalValues.gloval.imagePullSecrets | default "" }}
+      {{ end }}
+      nodeSelector:
+        kubernetes.io/os: {{ $GlovalValues.frontend.so | default $GlovalValues.gloval.so   }}
+      containers:
+        - name: frontend-{{ $globalName }}-{{$envName}}
+          image: {{ printf "%v:%v" ( ($envValue.image) | default (printf "%v/%v" $GlovalValues.imageContainerRegistryHost $globalName  ) ) ($envValue.tag | default $GlovalValues.gloval.tag)  }}
+          imagePullPolicy: 
+          ports:
+            - containerPort: {{$envValue.port | default "80"}}
+          livenessProbe:
+            path: {{ ($envValue.liveness).path | default $GlovalValues.gloval.liveness.path}}
+            initialDelaySeconds: {{ ($envValue.liveness).initialDelaySeconds | default $GlovalValues.gloval.liveness.initialDelaySeconds  }}
+            failureThreshold: {{ ($envValue.liveness).failureThreshold | default $GlovalValues.gloval.liveness.failureThreshold }}
+            periodSeconds: {{ ($envValue.liveness).periodSeconds | default $GlovalValues.gloval.liveness.periodSeconds }}
+            successThreshold: {{ ($envValue.liveness).successThreshold | default $GlovalValues.gloval.liveness.successThreshold }}
+            timeoutSeconds: {{ ($envValue.liveness).timeoutSeconds | default $GlovalValues.gloval.liveness.timeoutSeconds }}
+         
+          readinessProbe:
+            path: {{ ($envValue.readiness).path | default $GlovalValues.gloval.readiness.path}}
+            initialDelaySeconds: {{ ($envValue.readiness).initialDelaySeconds | default $GlovalValues.gloval.readiness.initialDelaySeconds  }}
+            failureThreshold: {{ ($envValue.readiness).failureThreshold | default $GlovalValues.gloval.readiness.failureThreshold }}
+            periodSeconds: {{ ($envValue.readiness).periodSeconds | default $GlovalValues.gloval.readiness.periodSeconds }}
+            successThreshold: {{ ($envValue.readiness).successThreshold | default $GlovalValues.gloval.readiness.successThreshold }}
+            timeoutSeconds: {{ ($envValue.readiness).timeoutSeconds | default $GlovalValues.gloval.readiness.timeoutSeconds }}
+
+          startupProbe:
+            path: {{ ($envValue.startup).path | default $GlovalValues.gloval.startup.path}}
+            initialDelaySeconds: {{ ($envValue.startup).initialDelaySeconds | default $GlovalValues.gloval.startup.initialDelaySeconds  }}
+            failureThreshold: {{ ($envValue.startup).failureThreshold | default $GlovalValues.gloval.startup.failureThreshold }}
+            periodSeconds: {{ ($envValue.startup).periodSeconds | default $GlovalValues.gloval.startup.periodSeconds }}
+            successThreshold: {{ ($envValue.startup).successThreshold | default $GlovalValues.gloval.startup.successThreshold }}
+            timeoutSeconds: {{ ($envValue.startup).timeoutSeconds | default $GlovalValues.gloval.startup.timeoutSeconds }}
+---
+    {{end}}
+  {{end}}

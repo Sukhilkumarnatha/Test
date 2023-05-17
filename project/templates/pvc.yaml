@@ -1,0 +1,46 @@
+{{ $globalName := .Release.Name }}
+  {{range $key,$value := .Values.gloval.volume}}
+  {{if ($value.azureDisk)}}
+{{else}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-{{$key}}-{{$globalName}}
+spec:
+  {{if $value.storageClass}}
+  storageClassName: {{$value.storageClass}}
+  {{end}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{$value.size | default "5Gi"}}
+  {{end}}
+  {{end}}
+
+
+
+  {{if .Values.backend}}
+  {{range $key,$value := .Values.backend}}
+  {{range $keyVol,$valueVol := $value.volume}}
+  {{if ($valueVol.azureDisk)}}
+  {{else}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-{{$keyVol}}-{{$globalName}}
+spec:
+  {{if $valueVol.storageClass}}
+  storageClassName: {{$valueVol.storageClass }}
+  {{end}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{$valueVol.size | default "5Gi"}}
+      {{end}}
+      {{end}}
+      {{end}}
+  {{end}}

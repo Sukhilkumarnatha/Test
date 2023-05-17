@@ -1,0 +1,103 @@
+{{ $Namespace := .Release.Namespace }}
+  {{ $GlovalValues := .Values }}
+  {{ $globalName := .Release.Name }}
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ $globalName }}
+spec:
+  hosts:
+    {{range $val := $GlovalValues.sub_domains}}
+    - {{$val}}
+  {{end}}
+  gateways:
+    - {{ .Values.gateway }}
+  http:
+    {{if .Values.backend}}
+    {{range $name,$value := .Values.backend}}
+    - match:
+        - uri:
+            prefix: /api/{{$name}}
+        {{- range $value.prefix }}
+        - uri:
+            prefix: {{ . }}
+        {{- end }}
+
+      route:
+        - destination:
+            host: {{ $globalName }}-{{ $name }}.{{ $Namespace  }}.svc.cluster.local
+            port:
+              {{if $value.port}}
+              number: {{$value.port}}
+              {{else}}
+              number: 80
+        {{end}}
+    {{end}}
+    {{end}}
+    - route:
+        - destination:
+            port:
+              number: 80
+            host: {{ $globalName }}
+    {{if .Values.frontends}}
+
+    {{range $name,$value := .Values.frontends}}
+    - match:
+        - uri:
+            prefix: {{$value.path}}
+      route:
+        - destination:
+            host: {{ $globalName }}-{{ $name }}-frontend.{{ $Namespace  }}.svc.cluster.local
+            port:
+              {{if $value.port}}
+              number: {{$value.port}}
+              {{else}}
+              number: 80
+  {{end}}
+  {{end}}
+  {{end}}
+  {{if .Values.frontend}}
+---
+    {{ range $envName,$envValue := .Values.frontend.other}}
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ $globalName }}-{{$envName}}
+spec:
+  hosts:
+    {{range $envValue.domains}}
+    - {{ . }}
+  {{end}}
+  gateways:
+    - {{ $GlovalValues.gateway }}
+  http:
+    {{if $GlovalValues.backend}}
+    {{range $name,$value := $GlovalValues.backend}}
+    - match:
+        - uri:
+            prefix: /api/{{$name}}
+        {{- range $value.prefix }}
+        - uri:
+            prefix: {{ . }}
+        {{- end }}
+
+      route:
+        - destination:
+            host: {{ $globalName }}-{{ $name }}.{{ $Namespace  }}.svc.cluster.local
+            port:
+              {{if $value.port}}
+              number: {{$value.port}}
+              {{else}}
+              number: 80
+        {{end}}
+    {{end}}
+    {{end}}
+    - route:
+        - destination:
+            port:
+              number: 80
+            host: frontend-{{ $globalName }}-{{$envName}}
+
+---
+{{end}}
+{{end}}

@@ -1,0 +1,148 @@
+backend:
+  election:
+    env:
+      AppSettings__PartitionSize: 50000
+    image: viberegistry.azurecr.io/ems.election
+  engine-rule:
+    image: viberegistry.azurecr.io/ems.enginerule
+  file-management:
+    image: viberegistry.azurecr.io/ems.file-management
+
+  geo-data:
+    image: viberegistry.azurecr.io/ems.geodata
+
+  identity:
+    env:
+      APIBaseUrl: https://alpinecounty.vibe-ems.app/
+      AppSettings__AdEnvironment: DEV
+      AppSettings__RedirectUrl: https://alpinecounty.vibe-ems.app/
+      RedirectUrl: https://alpinecounty.vibe-ems.app/
+    image: viberegistry.azurecr.io/ems.identity
+
+  integration-services:
+    env:
+      ASPNETCORE__ENVIRONMENT: Custom
+      ASPNETCORE__URLS: http://+:80
+      AppSettings__AdEnvironment: DEV
+      AppSettings__Implementation: h
+
+
+      AppSettings__ipVotecal: https://172.26.6.52/VoteCalIntgSvc/ProvisionalBallotIntgSvc.svc
+      AppSettings__isPreHashDataRequired: "false"
+      HTTPS_PROXY: 172.21.0.194:3128
+    image: viberegistry.azurecr.io/ems.integrationservices
+    prefix:
+    - /api/hub/integration-service
+
+  job-manager:
+    image: viberegistry.azurecr.io/ems.jobsmanager
+    replicas: 0
+
+  list-maintenance:
+    image: viberegistry.azurecr.io/ems.listmaintenance
+
+  location:
+    image: viberegistry.azurecr.io/ems.location
+
+  mailing:
+    env:
+      AppSettings__RedirectPort: https
+      AppSettings__RedirectProtocol: https://
+      AppSettings__RedirectUrl: vibe-ems.app/
+    image: viberegistry.azurecr.io/ems.mailing
+
+    volume:
+      files:
+        azureDisk:
+          diskName: disk-mailing-qa-westus-002
+          diskURI: /subscriptions/7afb2c48-3fcf-4226-b6a2-c6a85dac7a14/resourceGroups/MC_rg-ems-service-qa-001_arck-ems-qa-westus-002_westus/providers/Microsoft.Compute/disks/disk-mailing-qa-westus-002
+          kind: Managed
+        path: /app/wwwroot
+  notifications:
+    image: viberegistry.azurecr.io/ems.notifications
+    prefix:
+    - /api/hub/notifications
+
+  petition:
+    image: viberegistry.azurecr.io/ems.petition
+
+  reports:
+    env:
+      AppSettings__TableauEnvironment: qa
+    image: viberegistry.azurecr.io/ems.reports
+
+  security:
+    env:
+      APIBaseUrl: https://alamedacounty.vibe-ems.app/
+      AppSettings__SecretEmail: GAAAA**(#%NSASD5467%@MFA
+    image: viberegistry.azurecr.io/ems.security
+
+  system-configuration:
+    image: viberegistry.azurecr.io/ems.systemconfiguration
+
+  versioning:
+    image: viberegistry.azurecr.io/ems.versionservice
+
+  vip-integration:
+    image: viberegistry.azurecr.io/ems.vipintegrationservices
+
+  voter:
+    image: viberegistry.azurecr.io/ems.voter
+
+  worker:
+    image: viberegistry.azurecr.io/ems.electionworker
+
+elastic:
+  namespace: elk
+  releaseName: elk
+  version: 7.17.9
+logs:
+  azuredisk:
+    azurestorageaccountkey: VXZoWTJkK3h3aHluc01PTy8zZWo0VGt5RFFvSkwwWmJnMTM4QVZ0bm9IMHVEc1U0em1rT0d5WDhYZ2k4TjdVMS9wU0w2N3NrNHdxbStBU3R2RE1yUmc9PQ==
+    azurestorageaccountname: c2FxYWxvZ3M=
+    sharename: qalogs
+frontend:
+  image: viberegistry.azurecr.io/ems.client
+  imagePullSecrets: acr
+  other:
+    eday:
+      domains:
+      - eday-alpinecounty.vibe-ems.app
+      image: viberegistry.azurecr.io/edpclient
+  port: 80
+  replicas: 1
+gateway: default/ems
+gloval:
+  cert:
+    elastic.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURaVENDQWsyZ0F3SUJBZ0lRVE5na2w0WTJpWEY0R0oxYXhSVzZoVEFOQmdrcWhraUc5dzBCQVFzRkFEQTkKTVJvd0dBWURWUVFMRXhGbGJHc3RaV3hoYzNScFkzTmxZWEpqYURFZk1CMEdBMVVFQXhNV1pXeHJMV1ZzWVhOMAphV056WldGeVkyZ3RhSFIwY0RBZUZ3MHlNekF6TVRBeE5URTNNRFJhRncweU5EQXpNRGt4TlRJM01EUmFNRDB4CkdqQVlCZ05WQkFzVEVXVnNheTFsYkdGemRHbGpjMlZoY21Ob01SOHdIUVlEVlFRREV4WmxiR3N0Wld4aGMzUnAKWTNObFlYSmphQzFvZEhSd01JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBMDZvTgpJSHBNYTNhNDdGamptWEZVKzVrK0dUQnVpN0VDelJCVFg2amRBK3RLOXM2STRxU1BQa0dtTHBOMlJvcDR6WkdoCkhrVC9UYVg4WDFUUmg1c0lKcVM5NlovNSs2SEFrK3U2ZFBPUEU1M0s4V0dNNHlhUFovMjNqWUQvb2I3UnVuUjgKd2grbVRidGJGa2ZmWkUwUFJVK2NReWhsOHM1UThIMHNFQ3Rpc09iVGZWUjV1TmJuUTRSa3VSVnhOM0VCQzNkagpabTJHOVJnWng1dFVzRW9rS3lFMVo2alpqWWZPeEZJWFdCZGdmUWY0alo5dTlPa0o3N1BWZG1DR2l6V2RzUUVOCjFSeU5mM2Q0YklCVURyblkxVVV0c3FacERkTVVNVUtnN2EyNTBtOW1lRWFHb29uRlVHb3hPYjFMNmJBUHJ4a3MKaUJ6dVJUb3JFMHEwNmVKS013SURBUUFCbzJFd1h6QU9CZ05WSFE4QkFmOEVCQU1DQW9Rd0hRWURWUjBsQkJZdwpGQVlJS3dZQkJRVUhBd0VHQ0NzR0FRVUZCd01DTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3SFFZRFZSME9CQllFCkZMVVhBaFVHbEJCZ0wzS2FZRUY5YkVGdmlQR1dNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUFtejBuRHpIbU0KeHZGVkwxemxUNWlSam9MenY0aVlTWEc4L3VKNkZaMXlkUlFDMENIcFViVnZmNnpGZy9lWExuQUt6K3QzdlJPVQpvQmlBK1lBbG9PYjVsUy9CaFlzemZHMy94V282ZGRUaTZ4K0d6WHVvK0ZPbFZPdURSSGVMODZPaXpQa0lBVm9NCjdJR0dibkd1Y3Jmc25BakNWR05saXJUcXpqK2JDQXgxeFNOUnZqRGRZbEs0b3NSeTNTZzRmbGpZYmcvTms0RDUKSGJaNC9ObklVMUFSWDJkc284UGlWUWIxYWVNcWtVU21QNmlyb1RTS0dKaytqSU14NzVlUC94aUJnbStwdk5Tbwpnb0J1UDdhVU1QTzBlL1JVRTh2aDR5SlVuOFUvVEx2d0V4bHpiS2VLNkNUdGw0TGMyNURDa1B2VDBLZkNXK1hpCkpmbzZQanZXMEkzYgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  env:
+    AppSettings__Ctx: ems
+
+    AppSettings__JurisdictionCodes:
+    - "4002"
+    - "4019"
+    - "4048"
+    AppSettings__MainJurisdictionCode: 4
+    talend__uti: https://api.us-west.cloud.talend.com/tmc/v2.6/executions
+    talend__AuthToken: H91AO_CQTx6U3atcPtfRa4_x4AJQhFF49dGFsR5KIMbDxEPmYFP_TuAIGl6Yjb_q
+    ConnectionStrings__SnowFlakeDatabaseHistory: account=wyiaquh-ca_lower_environment;host=wyiaquh-ca-lower-environment.snowflakecomputing.com;user=QA_4002_VIBE_ADMIN_USER;password=_N1WPX_EaQeJ54QfEgJ7F5JScHb52N32;ROLE=QA_4002_MRT_RO_ROLE;WAREHOUSE=QA_4_COMPUTE_WH;db=QA;schema=MRT_VOTER_TRANSACTION
+  hostAliases: null
+  imagePullSecrets: acr
+  replicas: 1
+  secrets: vibe-secrets
+  secretsEnv:
+    ConnectionStrings__Blob: true
+    ConnectionStrings__EMSCache: true
+    ConnectionStrings__EMSDatabase: true
+    ConnectionStrings__EMSMessage: true
+    ConnectionStrings__HangFireDatabase: true
+    ConnectionStrings__TalendDatabase: true
+
+  so: linux
+imageContainerRegistryHost: viberegistry.azurecr.io
+migrations:
+  connectionStringName: ConnectionStrings__EMSDatabase
+  image: viberegistry.azurecr.io/ems.migrations
+  imagePullSecrets: vibe
+sub_domains:
+- alpinecounty.vibe-ems.app

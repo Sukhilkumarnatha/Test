@@ -1,0 +1,200 @@
+{{ $GlovalValues := .Values }}
+  {{ $globalName := .Release.Name }}
+  {{ range $name,$value := .Values.backend }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $globalName }}-{{ $name }}
+spec:
+  maxReplicas: 4
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $globalName }}-{{ $name }}
+  metrics:
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 95
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:
+    {{ $globalName }}-{{ $name }}
+  labels:
+    app:
+      {{ $globalName }}-{{ $name }}
+spec:
+  replicas: {{ $value.replicas  | default $GlovalValues.gloval.replicas }}
+  selector:
+    matchLabels:
+      app:
+        {{ $globalName }}-{{ $name }}
+  template:
+    metadata:
+      labels:
+        app:
+          {{ $globalName }}-{{ $name }}
+    spec:
+      {{ if or ($GlovalValues.gloval.imagePullSecrets) ($value.imagePullSecrets) }}
+      imagePullSecrets:
+        - name: {{ $value.imagePullSecrets | default $GlovalValues.gloval.imagePullSecrets  }}
+      {{ end }}
+
+      volumes:
+        - name: logs
+          persistentVolumeClaim:
+            claimName: {{ $globalName }}-pvc
+
+          {{range $volKey,$volValue := $GlovalValues.gloval.volume}}
+          {{if $volValue.azureDisk}}
+          - name: {{$volKey}}
+            azureDisk:
+              kind: {{$volValue.azureDisk.kind}}
+              diskName: {{$volValue.azureDisk.diskName}}
+              diskURI: {{$volValue.azureDisk.diskURI}}
+          {{else}}
+          - name: {{$volKey}}
+            persistentVolumeClaim:
+              claimName: pvc-{{$volKey}}-{{ $globalName }}
+          {{end}}
+          {{end}}
+          {{range $volKey,$volValue := $value.volume}}
+          {{if $volValue.azureDisk}}
+          - name: {{$volKey}}
+            azureDisk:
+              kind: {{$volValue.azureDisk.kind}}
+              diskName: {{$volValue.azureDisk.diskName}}
+              diskURI: {{$volValue.azureDisk.diskURI}}
+
+          {{else}}
+          - name: {{$volKey}}
+            persistentVolumeClaim:
+              claimName: pvc-{{$volKey}}-{{ $globalName }}
+      {{end}}
+      {{end}}
+      nodeSelector:
+        kubernetes.io/os: {{ $value.so | default $GlovalValues.gloval.so   }}
+        app: microservices
+      {{if ($GlovalValues.gloval.hostAliases ) }}
+      hostAliases:
+      {{range $GlovalValues.gloval.hostAliases}}
+      - ip: "{{.ip}}"
+        hostnames:
+          {{range .hostnames}}
+          - {{.}}
+        {{end}}
+      {{end}}
+      {{end}}
+      containers:
+        - name:
+            {{ $globalName }}-{{ $name }}
+          volumeMounts:
+              - name: logs
+                mountPath: /tmp_logs
+
+
+                {{range $volKey,$volValue := $GlovalValues.gloval.volume}}
+                - mountPath: {{$volValue.path}}
+                  name: {{$volKey}}
+                {{end}}
+                {{range $volKey,$volValue := $value.volume}}
+                - mountPath: {{$volValue.path}}
+                  name: {{$volKey}}
+
+
+          {{end}}
+          image: {{ (printf "%v:%v" ($value.image | default (printf "%v/%v-%v" $GlovalValues.imageContainerRegistryHost $globalName $name )) ($value.tag | default $GlovalValues.gloval.tag ) ) }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{$value.port | default 80}}
+          livenessProbe:
+            httpGet:
+              path: {{ ($value.liveness).path | default $GlovalValues.gloval.liveness.path}}
+              port: {{ ($value.liveness).path | default 80 }}
+            initialDelaySeconds: {{ ($value.liveness).initialDelaySeconds | default $GlovalValues.gloval.liveness.initialDelaySeconds}}
+            failureThreshold: {{ ($value.liveness).failureThreshold | default $GlovalValues.gloval.liveness.failureThreshold}}
+            periodSeconds: {{ ($value.liveness).periodSeconds | default $GlovalValues.gloval.liveness.periodSeconds}}
+            successThreshold: {{ ($value.liveness).successThreshold | default $GlovalValues.gloval.liveness.successThreshold}}
+            timeoutSeconds: {{ ($value.liveness).timeoutSeconds | default $GlovalValues.gloval.liveness.timeoutSeconds }}
+          readiness:
+            path: {{ ($value.readiness).path | default $GlovalValues.gloval.readiness.path}}
+            initialDelaySeconds: {{ ($value.readiness).initialDelaySeconds | default $GlovalValues.gloval.readiness.initialDelaySeconds  }}
+            failureThreshold: {{ ($value.readiness).failureThreshold | default $GlovalValues.gloval.readiness.failureThreshold }}
+            periodSeconds: {{ ($value.readiness).periodSeconds | default $GlovalValues.gloval.readiness.periodSeconds }}
+            successThreshold: {{ ($value.readiness).successThreshold | default $GlovalValues.gloval.readiness.successThreshold }}
+            timeoutSeconds: {{ ($value.readiness).timeoutSeconds | default $GlovalValues.gloval.readiness.timeoutSeconds }}
+          startup:
+            path: {{ ($value.startup).path | default $GlovalValues.gloval.startup.path}}
+            initialDelaySeconds: {{ ($value.startup).initialDelaySeconds | default $GlovalValues.gloval.startup.initialDelaySeconds  }}
+            failureThreshold: {{ ($value.startup).failureThreshold | default $GlovalValues.gloval.startup.failureThreshold }}
+            periodSeconds: {{ ($value.startup).periodSeconds | default $GlovalValues.gloval.startup.periodSeconds }}
+            successThreshold: {{ ($value.startup).successThreshold | default $GlovalValues.gloval.startup.successThreshold }}
+            timeoutSeconds: {{ ($value.startup).timeoutSeconds | default $GlovalValues.gloval.startup.timeoutSeconds }}
+
+          env:
+            - name: elastic__password
+              valueFrom:
+                secretKeyRef:
+                  key: elastic
+                  name: {{$GlovalValues.elastic.releaseName}}-elasticsearch-es-elastic-user
+            - name: ElasticApm__SecretToken
+              valueFrom:
+                secretKeyRef:
+                  key: secret-token
+                  name: {{$GlovalValues.elastic.releaseName}}-apm-server-apm-token
+            - name: elastic__username
+              value: elastic
+            - name: elastic__uri
+              value: http://{{$GlovalValues.elastic.releaseName}}-elasticsearch-es-http.elk.svc:9200
+            - name: ElasticApm__ServerUrls
+              value: http://{{$GlovalValues.elastic.releaseName}}-apm-server-apm-http.elk.svc:8200
+
+            {{ range $envName,$envValue := $value.env }}
+            - name: {{$envName}}
+              value: "{{$envValue}}"
+            {{ end }}
+
+            {{ range $envName,$envValue := $GlovalValues.gloval.env }}
+            {{ if $value.env}}
+            {{ if  eq (hasKey $value.env   $envName)  false  }}
+            - name: {{$envName}}
+              value: "{{$envValue}}"
+            {{ end }}
+            {{else }}
+            - name: {{$envName}}
+              value: "{{$envValue}}"
+            {{end}}
+            {{ end }}
+            {{range $envName,$envValue := $value.secretEnv}}
+            {{if $envValue}}
+            - name: {{$envName}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $value.secrets | default $GlovalValues.gloval.secrets}}
+                  key: {{$envName}}
+            {{end}}
+            {{end}}
+            {{range $envName,$envValue := $GlovalValues.gloval.secretsEnv}}
+            {{ if $value.secretEnv}}
+            {{if and  $envValue (eq (hasKey $value.secretEnv     $envName)  false) }}
+            - name: {{$envName}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{$GlovalValues.gloval.secrets}}
+                  key: {{$envName}}
+            {{end}}
+            {{else}}
+            - name: {{$envName}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{$GlovalValues.gloval.secrets}}
+                  key: {{$envName}}
+  {{end }}
+  {{end}}
+  {{end}}

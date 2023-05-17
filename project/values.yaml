@@ -1,0 +1,369 @@
+imageContainerRegistryHost: viberegistry.azurecr.io
+#sub_domains:
+#  - alpinecounty.vibe-ems.app
+#  - stateofcalifornia.vibe-ems.app
+#  - losangelescounty.vibe-ems.app
+#  - nevadacounty.vibe-ems.app
+
+elastic:
+  namespace: elk
+  releaseName: elk
+  version: 7.17.9
+logs:
+  azuredisk:
+    azurestorageaccountkey: secret
+    azurestorageaccountname: secret
+    sharename: qalogs
+gloval:
+#  hostAliases:
+#    - ip: "127.0.0.1"
+#      hostnames:
+#        - "wa.wa"
+#        - "wa.we"
+  cert:
+    ems.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUc1akNDQmM2Z0F3SUJBZ0lRZHhxc3RYZnZUa0gyVnBQNzExSjVEREFOQmdrcWhraUc5dzBCQVFzRkFEQ0IKbFRFTE1Ba0dBMVVFQmhNQ1IwSXhHekFaQmdOVkJBZ1RFa2R5WldGMFpYSWdUV0Z1WTJobGMzUmxjakVRTUE0RwpBMVVFQnhNSFUyRnNabTl5WkRFWU1CWUdBMVVFQ2hNUFUyVmpkR2xuYnlCTWFXMXBkR1ZrTVQwd093WURWUVFECkV6UlRaV04wYVdkdklGSlRRU0JQY21kaGJtbDZZWFJwYjI0Z1ZtRnNhV1JoZEdsdmJpQlRaV04xY21VZ1UyVnkKZG1WeUlFTkJNQjRYRFRJeU1EY3lNREF3TURBd01Gb1hEVEl6TURjeU1ESXpOVGsxT1Zvd1l6RUxNQWtHQTFVRQpCaE1DVlZNeEV6QVJCZ05WQkFnVENrTmhiR2xtYjNKdWFXRXhKakFrQmdOVkJBb1RIVkJ5YjNacGMzUmhJRk52ClpuUjNZWEpsSUVOdmNuQnZjbUYwYVc5dU1SY3dGUVlEVlFRRERBNHFMblpwWW1VdFpXMXpMbUZ3Y0RDQ0FTSXcKRFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUxIZlN2M2ZZMWhiODAvT28yaWZseGZ3TWJpMQpXM1VFK09BeTZMYnJER09QMjNTbEROYlRncXNSUFJwUU4zVjhmdEhGT3I4Y1cvaGo3bWdDNmI2UDlBb2F2eFN2CitSSkpmVEdIYXpoMXk4cEZuSEVUS29PL3hlVyt1SWorMDJBUjYrK25XTTNOM3dFdWx4aSs5TmlkK3Mydjh4M1kKbHUxdkJNaEN3TzVJMjQrV0pUcnhYamcxUTVSTUtrblQ3akFBeWhSbkg2L1NzWkpGQlRDaFpUS2F6TFd5cmt2NwpHVjBvQlFvMllRMzJPNmdhNUp0SXlOSFJCeGNPcEJPRmNLQk9OUmlzMGlDckNScnNhZmxwYUFLNnpOQXJidFVIClJZamhvbFdvdGRRSGlHaGFOUVh0UlNLRlRoYkg5ZGgwRFQ3Qk0rUGhSNis5ZVVmR1NUazdxVURuREs4Q0F3RUEKQWFPQ0EyRXdnZ05kTUI4R0ExVWRJd1FZTUJhQUZCZloxaVVuWi9reHdrbEQyVEEyUkl4c3FVL3JNQjBHQTFVZApEZ1FXQkJUY3ZxeEtZbGUzR09Jb1FwUG5NbzEvWFFtQkhEQU9CZ05WSFE4QkFmOEVCQU1DQmFBd0RBWURWUjBUCkFRSC9CQUl3QURBZEJnTlZIU1VFRmpBVUJnZ3JCZ0VGQlFjREFRWUlLd1lCQlFVSEF3SXdTZ1lEVlIwZ0JFTXcKUVRBMUJnd3JCZ0VFQWJJeEFRSUJBd1F3SlRBakJnZ3JCZ0VGQlFjQ0FSWVhhSFIwY0hNNkx5OXpaV04wYVdkdgpMbU52YlM5RFVGTXdDQVlHWjRFTUFRSUNNRm9HQTFVZEh3UlRNRkV3VDZCTm9FdUdTV2gwZEhBNkx5OWpjbXd1CmMyVmpkR2xuYnk1amIyMHZVMlZqZEdsbmIxSlRRVTl5WjJGdWFYcGhkR2x2YmxaaGJHbGtZWFJwYjI1VFpXTjEKY21WVFpYSjJaWEpEUVM1amNtd3dnWW9HQ0NzR0FRVUZCd0VCQkg0d2ZEQlZCZ2dyQmdFRkJRY3dBb1pKYUhSMApjRG92TDJOeWRDNXpaV04wYVdkdkxtTnZiUzlUWldOMGFXZHZVbE5CVDNKbllXNXBlbUYwYVc5dVZtRnNhV1JoCmRHbHZibE5sWTNWeVpWTmxjblpsY2tOQkxtTnlkREFqQmdnckJnRUZCUWN3QVlZWGFIUjBjRG92TDI5amMzQXUKYzJWamRHbG5ieTVqYjIwd0p3WURWUjBSQkNBd0hvSU9LaTUyYVdKbExXVnRjeTVoY0hDQ0RIWnBZbVV0WlcxegpMbUZ3Y0RDQ0FYNEdDaXNHQVFRQjFua0NCQUlFZ2dGdUJJSUJhZ0ZvQUhZQXJmZSsrbnovRU1pTG5UMmNIajRZCmFyUm5LVjNQc1F3a3lvV0dOT3ZjZ29vQUFBR0NHeWRjZ1FBQUJBTUFSekJGQWlCakN0MDZOWGdWbVlaUjB0Q0IKeExjZndXeE91cDlzanlMcXZFNjVLbG00a3dJaEFQbWx1b2ZkSytYMkxrQXVsZXB3Yk9ibkx1dHh5YmtQZCtlTQp3K0daVThndEFIWUFlaktNVk5pM0xiWWc2ampnVWg3cGhCWndNaE9GVFR2U0s4RTZWNk5TNjFJQUFBR0NHeWRjClh3QUFCQU1BUnpCRkFpQlIrQmFRQVd6dXY2ZXBWR1FJeHNROVFxcU9wbnRzS0lHaWRBTzdsY3Q0WWdJaEFMNUIKSjFHeVppMjUya1RXL3krSkEzMnJYUFg4NGNtdHJGUDRra1I2T2doaUFIWUE2RDdRMmo3MUJqVXk1MWNvdklscgp5UVBUeTlFUmErenJhZUYzZlcwR3ZXNEFBQUdDR3lkY0p3QUFCQU1BUnpCRkFpRUE1bjhHUXVQU3BxMk40V2oxCkg3Q3R3MVo0VmxiNkFmRlRvQllxTURRVm13MENJRVZQaUdtMXFSTUtDaGZpMVVKWkNwaC95NnZBeEF5YngrMFgKSEtya01FeGRNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUI3QnBpenc1M2x3Z0dGcitOUWxCZEF3SURIZytnWAp1K3VZU0tPUGxnZXhnNHAwc2dTZUZlaWF3cDNaUjVrYldEM0VmeUg1OXJMSTAveGhaa205RUc5UDdCdW1kai9rCkxmeU8zajRsUnBHNlBQSzJqUXV2K0JXajBsK2VqMXh2MTdpQWhWUjh0R2JSZWIwanJIY0dPWjMyZ2E5SXZvdEgKWXJHek5MeGJ5dFEwK082NnBKSjBqZGIxSVpDanVoSHl6U3V5dERranNZRXExRzVpQThQMzFLSlVFN1lVcyt1RwpXUEFHRUFHaGU5b1F2dGE4VDVLWllCODNhSkt2QmZlb2hGTGEwS3g1SzYvM0NwR2pMeG02N2RJQUpGMmMxU2dVCkRQak5nWURtWncxL0g3MkF5WFpnSFpXTFI4cVJkU3dLNHMyeWU3QVNZOWtHWHFaUHhsbDNKald6Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0=
+  replicas: 1
+  tag:  32812
+  image: viberegistry.azurecr.io/ems.election
+  startup: 
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 30
+    successThreshold: 1
+    failureThreshold: 20
+  liveness:    
+    initialDelaySeconds: 10 
+    periodSeconds: 10
+    timeoutSeconds: 30
+    successThreshold: 1
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 10
+    successThreshold: 1
+    failureThreshold: 1
+  
+#  secrets: innovar-secrets
+#  imagePullSecrets: vibe
+  so: linux
+#  env:
+#    AppSettings__Ctx: ems
+#    elastic__password: Provista_123
+#    elastic__uri: http://elastic-es-http.default.svc.cluster.local:9200
+#    elastic__username: provistacorp
+#  secretsEnv:
+#    ConnectionStrings__Blob: true
+#    ConnectionStrings__EMSCache: true
+#    ConnectionStrings__EMSDatabase: true
+#    ConnectionStrings__EMSMessage: true
+#    ConnectionStrings__HangFireDatabase: true
+#  volume:
+#    log:
+#      storageClass: storage
+#      size: 5Gi
+#      path: /api/gg2
+#      azureDisk:
+#        kind: Managed
+#        diskName: myAKSDisk
+#        diskURI: /subscriptions/<subscriptionID>/resourceGroups/MC_myAKSCluster_myAKSCluster_eastus/providers/Microsoft.Compute/disks/myAKSDisk
+
+
+backend:
+    election:
+      image: viberegistry.azurecr.io/ems.election
+      tag: 22268
+      startup:
+        path : /hc
+        initialDelaySeconds: 40
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+      prefix:
+        - /api
+        - /value
+
+
+    worker:
+      image: viberegistry.azurecr.io/ems.electionworker
+      tag: 22286
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+
+    engine-rule:
+      image: viberegistry.azurecr.io/ems.enginerule
+      tag: 22269
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+
+    geo-data:
+      image: viberegistry.azurecr.io/ems.geodata
+      tag: 22270
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+
+    identity:
+      env:
+        APIBaseUrl: https://alamedacounty.vibe-ems.app/
+        AppSettings__AdEnvironment: DEV
+        AppSettings__RedirectUrl: https://alamedacounty.vibe-ems.app/
+        RedirectUrl: https://alamedacounty.vibe-ems.app/
+      image: viberegistry.azurecr.io/ems.identity
+      tag: 22271
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+      
+    job-manager:
+      image: viberegistry.azurecr.io/ems.jobsmanager
+      tag: 22281
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+       
+    list-maintenance:
+      image: viberegistry.azurecr.io/ems.listmaintenance
+      tag: 22273
+      startup:
+        enabled: true 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+
+    location:
+      image: viberegistry.azurecr.io/ems.location
+      tag: 22278
+      startup:
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+       
+    mailing:
+      env:
+        AppSettings__RedirectPort: https
+        AppSettings__RedirectUrl: vibe-ems.app/
+      image: viberegistry.azurecr.io/ems.mailing
+      tag: 22279
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+          
+      volume:
+        files:
+          azureDisk:
+            diskName: MailingDisk
+            diskURI: /subscriptions/f12fcbf5-7402-46b5-b153-5c52c1dfd787/resourceGroups/MC_E_group_EMS_westus/providers/Microsoft.Compute/disks/MailingDisk
+            kind: Managed
+          path: /app/wwwroot
+    notifications:
+      image: viberegistry.azurecr.io/ems.notifications
+      tag: 22282
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+    petition:
+      image: viberegistry.azurecr.io/ems.petition
+      tag: 22284
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+    reports:
+      env:
+        AppSettings__TableauEnvironment: test
+      image: viberegistry.azurecr.io/ems.reports
+      tag: 22283
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+    security:
+      env:
+        APIBaseUrl: https://alamedacounty.vibe-ems.app/
+      image: viberegistry.azurecr.io/ems.security
+      tag: 22274
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+    system-configuration:
+      image: viberegistry.azurecr.io/ems.systemconfiguration
+      tag: 22275
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path : /hc
+      liveness:
+        path : /hc
+    versioning:
+      image: viberegistry.azurecr.io/ems.versionservice
+      tag: 22276
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+    vip-integration:
+      image: viberegistry.azurecr.io/ems.vipintegrationservices
+      tag: 21990
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+    voter:
+      image: viberegistry.azurecr.io/ems.voter
+      tag: 22277
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+    integration-services:
+      image: viberegistry.azurecr.io/ems.integrationservices
+      tag: 22272
+      startup: 
+        path : /hc
+        initialDelaySeconds: 30
+      readiness:
+        path: /hc
+      liveness:
+        path: /hc
+      so: window
+      env:
+        ASPNETCORE_ENVIRONMENT: Custom
+        AppSettings__Implementation: h
+        AppSettings__ipVoteca: https://172.26.3.5:4447/VoteCalIntgSvc/VoterSearchIntgSvc.svc
+        ASPNETCORE_URLS: http://+:80
+        AppSettings__isPreHashDataRequired: false
+        AppSettings__AdEnvironment: DEV
+
+
+
+  #authentication:
+#    replicas: 1
+#    port: 80
+#    imagePullSecrets: vibe
+#    image: nginx
+#    tag: 85
+#    so: windows
+#    secrets: innovar-custom
+#    volume:
+#      files:
+#        storagecd Class: storage
+#        size: 5Gi
+#        path: /api/gg
+#        azureDisk:
+#          kind: Managed
+#          diskName: myAKSDisk
+#          diskURI: /subscriptions/<subscriptionID>/resourceGroups/MC_myAKSCluster_myAKSCluster_eastus/providers/Microsoft.Compute/disks/myAKSDisk
+#
+#    env:
+#      appName: authentication
+#    secretEnv:
+#      ConnesctionString__Database: true
+
+
+
+frontend:
+  image: viberegistry.azurecr.io/ems.client
+  tag: 22280
+  replicas: 1
+  port: 80
+  imagePullSecrets: vibe
+  liveness:
+    path: /
+    initialDelaySeconds: 40
+  readiness:
+      path: /
+      initialDelaySeconds: 40
+  startup:
+      path: /
+      initialDelaySeconds: 40
+
+  other:
+    - domains: ["eday-alpinecounty.vibe-ems.app"]
+      image: viberegistry.azurecr.io/ems.client
+      name: eday
+      tag: 22280
+      replicas: 1
+      port: 80
+      imagePullSecrets: vibe
+      startup:
+        path : /
+        initialDelaySeconds: 40
+      liveness:
+        path: /
+        initialDelaySeconds: 40
+      readiness:
+        path: /
+        initialDelaySeconds: 40
+
+
+
+#sub_domains:
+  #- alpinecounty.vibe-ems.app
+  #- stateofcalifornia.vibe-ems.app
+  #- losangelescounty.vibe-ems.app
+  #- nevadacounty.vibe-ems.app
+
+#migrations:
+  #image: viberegistry.azurecr.io/ems.client
+  #tag: 22280
+  #imagePullSecrets: vibe
+  #connectionStringName: ConnectionStrings__EMSDatabase
+

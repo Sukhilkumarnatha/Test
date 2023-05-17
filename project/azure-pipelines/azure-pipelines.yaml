@@ -1,0 +1,94 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+  - none
+
+parameters:
+  - name: kubernetesConnection
+    displayName: Kubernetes Connection
+    type: string
+    default: k8s-dev
+    values:
+      - 'k8s-dev'
+      - 'k8s-pre-prod'
+  - name: namespace
+    displayName: Namespace
+    type: string
+    default: ems-test
+    values:
+      - 'ems-test'
+      - 'qa'
+      - 'uat'
+  - name: tag
+    displayName: Tag
+    type: string
+    default: null
+  - name: override
+    displayName: Other Override
+    type: string
+    default: null
+
+pool: Linux-Agent
+steps:
+  - task: HelmInstaller@0
+    displayName: 'Install Helm 3.10.1'
+    inputs:
+      helmVersion: 3.10.1
+  - task: HelmDeploy@0
+    displayName: 'helm add repo'
+    inputs:
+      connectionType: None
+      command: repo
+      arguments: 'add ems http://chartmuseum:8080'
+  - script: helm repo update
+  - ${{ if eq(parameters.tag, 'null') }}:
+    - task: HelmDeploy@0
+      displayName: 'helm upgrade'
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceConnection: '${{ parameters.kubernetesConnection }}'
+        namespace: '${{ parameters.namespace }}'
+        command: upgrade
+        chartName: ems/project
+        releaseName: ems
+        arguments: '--install --reuse-values '
+        waitForExecution: false
+        valueFile: 'helm/project/azure-pipelines/${{ parameters.namespace }}.yaml'
+  - ${{ if ne(parameters.tag, 'null') }}:
+    - task: HelmDeploy@0
+      displayName: 'helm upgrade'
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceConnection: '${{ parameters.kubernetesConnection }}'
+        namespace: '${{ parameters.namespace }}'
+        command: upgrade
+        chartName: ems/project
+        releaseName: ems
+        arguments: '--install --set gloval.tag=${{ parameters.tag }}'
+        waitForExecution: false
+        valueFile: 'helm/project/azure-pipelines/${{ parameters.namespace }}.yaml'
+  - ${{ if ne(parameters.override, 'null') }}:
+      - task: HelmDeploy@0
+        displayName: 'helm upgrade'
+        inputs:
+          connectionType: 'Kubernetes Service Connection'
+          kubernetesServiceConnection: '${{ parameters.kubernetesConnection }}'
+          namespace: '${{ parameters.namespace }}'
+          command: upgrade
+          chartName: ems/project
+          releaseName: ems
+          arguments: '--install --reuse-values --set ${{ parameters.override }}'
+          waitForExecution: false
+          valueFile: 'helm/project/azure-pipelines/${{ parameters.namespace }}.yaml'
+
+  - task: HelmDeploy@0
+    displayName: 'helm get'
+    inputs:
+      connectionType: 'Kubernetes Service Connection'
+      kubernetesServiceConnection: '${{ parameters.kubernetesConnection }}'
+      namespace: '${{ parameters.namespace }}'
+      command: get
+      arguments: 'values ems'
